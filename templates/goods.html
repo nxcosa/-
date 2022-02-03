@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<link rel="stylesheet" href="../static/layui/css/layui.css">
+	<script src="../static/layui/layui.js"></script>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>库存管理</title>
+</head>
+<body class="layui-layout-body">
+	<div class="layui-layout layui-layout-admin">
+		<div class="layui-header">
+			<div class="layui-logo "><i class="layui-icon layui-icon-cart"></i>库存管理系统</div>
+			<!-- 头部区域（可配合layui已有的水平导航） -->
+			<ul class="layui-nav layui-layout-left">
+				<li class="layui-nav-item" ><a href="/index/"><i class="layui-icon layui-icon-table"></i>库存管理</a></li>
+				<li class="layui-nav-item"><a href="/count/"><i class="layui-icon layui-icon-rmb"></i>预算统计</a></li>
+                <li class="layui-nav-item"><a href="/other/"><i class="layui-icon layui-icon-time"></i>出入库记录</a></li>
+            </ul>
+		</div>
+
+		<div style="padding: 5%;">
+			<!-- 内容主体区域 -->
+            <div class="layui-fluid">
+                <div class="demoTable">
+                    <i class="layui-icon layui-icon-search"></i>
+                    类型：
+                    <div class="layui-form layui-input-inline">
+                        <select id="searchplace" name="place" >
+                            <option value="">全部</option>
+                            <option value="铣刀">铣刀</option>
+                            <option value="车刀">车刀</option>
+                            <option value="工具">工具</option>
+                            <option value="其它">其它</option>
+                        </select>
+                    </div>
+                    搜索品名：
+                    <div class="layui-inline">
+                        <input class="layui-input" name="name" id="searchname" autocomplete="off">
+                    </div>
+                    搜索型号：
+                    <div class="layui-inline">
+                        <input class="layui-input" name="size" id="searchsize" autocomplete="off">
+                    </div>
+                    <button class="layui-btn" id="searchbt" data-type="reload">搜索</button>
+                    <button type="button" class="layui-btn" id="addbt" style="float: right;"><i class="layui-icon">&#xe608;</i> 添加库存品类</button>
+                </div>
+            </div>
+			<table class="layui-hide" id="good" lay-filter="good"></table>
+
+			<script type="text/html" id="toolbarDemo"></script>
+			
+			<script type="text/html" id="barDemo">
+                <a class="layui-btn layui-btn-warm layui-btn-xs" lay-event="save">更新</a>
+				<a class="layui-btn layui-btn-xs" lay-event="out">出库</a>
+                <a class="layui-btn layui-btn-xs" lay-event="in">入库</a>
+				<a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+			</script>
+        </div>
+        <script type="text/html" id="save">
+            <form class="layui-form" action="/error/" id="saveit">
+                <fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
+                    <legend>修改库存信息</legend>
+                </fieldset>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">序号</label>
+                    <div class="layui-input-inline">
+                      <input type="text" name="id" id="sid" lay-verify="required" readonly="true" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">品名</label>
+                    <div class="layui-input-inline">
+                      <input type="text" name="name" id="sname" lay-verify="required"  class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">型号</label>
+                    <div class="layui-input-inline">
+                      <input type="text" name="size" id="ssize" lay-verify="required"  class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">类型</label>
+                    <div class="layui-input-inline">
+                        <select id="splace" name="place" lay-verify="required">
+                            <option value="">请选择</option>
+                            <option value="铣刀">铣刀</option>
+                            <option value="车刀">车刀</option>
+                            <option value="工具">工具</option>
+                            <option value="其它">其它</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">厂商</label>
+                    <div class="layui-input-inline">
+                      <input type="text" name="factory" id="sfactory"  class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">单价</label>
+                    <div class="layui-input-inline">
+                      <input type="text" name="price" id="sprice" lay-verify="required|number" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn" lay-submit lay-filter="save" >立即提交</button>
+                    </div>
+                </div>
+            </form>
+        </script>
+        <script type="text/html" id="inlog">
+            <form class="layui-form" action="/error"  id="inlogit">
+                <fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
+                    <legend>入库登记</legend>
+                </fieldset>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">序号</label>
+                    <div class="layui-input-inline">
+                      <input type="text" name="id" id="iid" lay-verify="required" readonly="true" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">品名</label>
+                    <div class="layui-input-inline">
+                      <input type="text" id="iname" lay-verify="required" readonly="true" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">型号</label>
+                    <div class="layui-input-inline">
+                      <input type="text"  id="isize" lay-verify="required" readonly="true" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">类型</label>
+                    <div class="layui-input-inline">
+                      <input type="text"  id="iplace" lay-verify="required" readonly="true" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">厂商</label>
+                    <div class="layui-input-inline">
+                      <input type="text"  id="ifactory" readonly="true" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">入库数量</label>
+                    <div class="layui-input-inline">
+                      <input type="text" name="change" lay-verify="required|number" placeholder="请输入库数量" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                	<label class="layui-form-label">入库人员</label>
+                	<div class="layui-input-inline">
+                	  <select id ="ioperating_personnelId"  name="ioperating_personnel" lay-verify="required">
+                
+                	  </select>
+                	</div>
+                </div>
+
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn" lay-submit lay-filter="inlog">立即提交</button>
+                    </div>
+                </div>
+            </form>
+        </script>
+        <script type="text/html" id="outlog">
+            <form class="layui-form" action="/error/" id="outlogit">
+                <fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
+                    <legend>出库登记</legend>
+                </fieldset>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">序号</label>
+                    <div class="layui-input-inline">
+                      <input type="text" name="id" id="oid" lay-verify="required" readonly="true" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">品名</label>
+                    <div class="layui-input-inline">
+                      <input type="text" id="oname" lay-verify="required" readonly="true" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">型号</label>
+                    <div class="layui-input-inline">
+                      <input type="text" id="osize" lay-verify="required" readonly="true" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">类型</label>
+                    <div class="layui-input-inline">
+                      <input type="text"  id="oplace" lay-verify="required" readonly="true" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">厂商</label>
+                    <div class="layui-input-inline">
+                      <input type="text"  id="ofactory" readonly="true" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">目前库存</label>
+                    <div class="layui-input-inline">
+                      <input type="text"  id="onumber" readonly="true" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">出库数量</label>
+                    <div class="layui-input-inline">
+                      <input type="text" name="change" lay-verify="required|number|bigger|more" placeholder="请输出库数量" class="layui-input">
+                    </div>
+                </div>
+				
+				<div class="layui-form-item">
+					<label class="layui-form-label">出库人员</label>
+					<div class="layui-input-inline">
+					  <select id ="ooperating_personnelId"  name="ooperating_personnel" lay-verify="required">
+
+					  </select>
+					</div>
+				</div>
+
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn" lay-submit lay-filter="outlog" >立即提交</button>
+                    </div>
+                </div>
+            </form>
+        </script>
+        <script type="text/html" id="delgoods">
+            <form class="layui-form" action="/error/"  id="delgoodsit">
+                <fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
+                    <legend>删除库存品类</legend>
+                </fieldset>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">序号</label>
+                    <div class="layui-input-inline">
+                      <input type="text" name="id" id="did" lay-verify="required" readonly="true" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">品名</label>
+                    <div class="layui-input-inline">
+                      <input type="text" id="dname"  lay-verify="required" readonly="true" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">型号</label>
+                    <div class="layui-input-inline">
+                      <input type="text"  id="dsize" lay-verify="required" readonly="true" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">类型</label>
+                    <div class="layui-input-inline">
+                      <input type="text"  id="dplace" lay-verify="required" readonly="true" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">厂商</label>
+                    <div class="layui-input-inline">
+                      <input type="text" id="dfactory" readonly="true" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">库存数量</label>
+                    <div class="layui-input-inline">
+                      <input type="text"  id="dnumber" lay-verify="zero" readonly="true" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn" lay-submit lay-filter="delgoods">确认删除</button>
+                    </div>
+                </div>
+            </form>
+        </script>
+        <script type="text/html" id="addgoods">
+            <form class="layui-form" action="/error/"  id="addgoodsit">
+                <fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
+                    <legend>添加库存品类</legend>
+                </fieldset>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">品名</label>
+                    <div class="layui-input-inline">
+                      <input type="text" name="name"  lay-verify="required" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">型号</label>
+                    <div class="layui-input-inline">
+                      <input type="text" name="size" lay-verify="required" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">类型</label>
+                    <div class="layui-input-inline">
+                        <select name="place" lay-verify="required">
+                            <option value="">请选择</option>
+                            <option value="铣刀">铣刀</option>
+                            <option value="车刀">车刀</option>
+                            <option value="工具">工具</option>
+                            <option value="其它">其它</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">厂商</label>
+                    <div class="layui-input-inline">
+                      <input type="text" name="factory"  class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">单价</label>
+                    <div class="layui-input-inline">
+                      <input type="text" name="price"  class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn" lay-submit lay-filter="addgoods">立即提交</button>
+                    </div>
+                </div>
+            </form>
+        </script>
+	</div>
+	<script>
+		layui.use(['table','form','layer'], function () {
+			var table = layui.table;
+			var form = layui.form;
+			var layer = layui.layer;
+			table.render({
+				elem: '#good'
+				, url:'/data/goods/'
+				, toolbar: '#toolbarDemo' //开启头部工具栏，并为其绑定左侧模板
+				, defaultToolbar: ['filter', 'exports', 'print', { //自定义头部工具栏右侧图标。如无需自定义，去除该参数即可
+					title: '提示'
+					, layEvent: 'LAYTABLE_TIPS'
+					, icon: 'layui-icon-tips'
+				}]
+				, title: '库存数据表'
+				, cols: [[
+					{ field: 'id', title: '序号', width: 80, fixed: 'left', unresize: true, sort: true }
+					, { field: 'name', title: '品名', width: 180 , sort: true }
+					, { field: 'size', title: '型号', width: 180 , sort: true}
+                    , { field: 'factory', title: '厂商', width: 180, sort: true}
+                    , { field: 'price', title: '单价', width: 80}
+                    , { field: 'place', title: '类型', width: 80}
+					, { field: 'number', title: '数量', width: 120 }
+					, { fixed: 'right', title: '操作', toolbar: '#barDemo', width: 220 }
+				]]
+                ,id: 'testReload'
+				, page: true
+                ,limit:50
+                ,skin: 'row'
+                ,even: true
+                ,height: 'full-160'
+			});
+
+			//头工具栏事件
+			table.on('toolbar(good)', function (obj) {
+				var checkStatus = table.checkStatus(obj.config.id);
+				switch (obj.event) {
+					case 'getCheckData':
+						var data = checkStatus.data;
+						layer.alert(JSON.stringify(data));
+						break;
+
+					//自定义头工具栏右侧图标 - 提示
+					case 'LAYTABLE_TIPS':
+						layer.alert('这是工具栏右侧自定义的一个图标按钮');
+						break;
+				};
+			});
+
+			//监听行工具事件
+			table.on('tool(good)', function (obj) {
+				var data = obj.data;
+				//console.log(obj)
+				if (obj.event === 'del') {
+					layer.open({
+                        type: 1,
+                        area: ['380px', '450px'],
+                        title:"",
+                        content:$("#delgoods").html(),
+                        success:function () {
+                            $("#did").val(data.id)
+                            $("#dname").val(data.name)
+                            $("#dsize").val(data.size)
+                            $("#dplace").val(data.place)
+                            $("#dfactory").val(data.factory)
+                            $("#dnumber").val(data.number)
+                        }
+                    })
+				} else if (obj.event === 'in') {
+					layer.open({
+                        type: 1,
+                        area: ['380px', '500px'],
+                        title:"",
+                        content:$("#inlog").html(),
+                        success:function () {
+                            $("#iid").val(data.id)
+                            $("#iname").val(data.name)
+                            $("#isize").val(data.size)
+                            $("#ifactory").val(data.factory)
+                            $("#iplace").val(data.place)
+                            $.get("/data/names/",function(d){
+                            var list = d.data;
+                            // console.log(list[0].name);
+                            var str = "<option ></option>"
+                            for(var i= 0;i<list.length;i++){
+                              str+= "<option >"+list[i].name+"</option>"
+                            }
+                            $("#ioperating_personnelId").html(str);
+                            
+                            form.render()
+                            });
+                        }
+                    })
+				}else if (obj.event === 'out') {
+					layer.open({
+                        type: 1,
+                        area: ['380px', '550px'],
+                        title:"",
+                        content:$("#outlog").html(),
+                        success:function () {
+                            $("#oid").val(data.id)
+                            $("#oname").val(data.name)
+                            $("#osize").val(data.size)
+                            $("#ofactory").val(data.factory)
+                            $("#oplace").val(data.place)
+                            $("#onumber").val(data.number)
+							$.get("/data/names/",function(d){
+                            var list = d.data;
+                            // console.log(list[0].name);
+                            var str = "<option ></option>"
+                            for(var i= 0;i<list.length;i++){
+                              str+= "<option >"+list[i].name+"</option>"
+                            }
+                            $("#ooperating_personnelId").html(str);
+
+                            form.render()
+							});
+                        }
+                    })
+				}else if (obj.event ==='save') {
+				    layer.open({
+                        type: 1,
+                        area: ['380px', '480px'],
+                        title:"",
+                        content:$("#save").html(),
+                        success:function () {
+                            $("#sid").val(data.id)
+                            $("#sname").val(data.name)
+                            $("#ssize").val(data.size)
+                            $("#sfactory").val(data.factory)
+                            $("#splace").val(data.place)
+                            $("#sprice").val(data.price)
+                            form.render()
+                        }
+                    })
+                }
+			});
+			var $ = layui.$, active = {
+                reload: function(){
+                    var searchplace = $('#searchplace');
+                    var searchname = $('#searchname');
+                    var searchsize = $('#searchsize');
+                    //执行重载
+                    table.reload('testReload', {
+                        page: {
+                            curr: 1 //重新从第 1 页开始
+                        }
+                        ,where: {
+                            place: searchplace.val(),
+                            name: searchname.val(),
+                            size: searchsize.val()
+                        }
+                  }, 'data');
+                }
+            };
+            $('#searchbt').on('click', function(){
+                var type = $(this).data('type');
+                active[type] ? active[type].call(this) : '';
+            });
+            $('#addbt').on('click', function(){
+                layer.open({
+                        type: 1,
+                        area: ['380px', '400px'],
+                        title:"",
+                        content:$("#addgoods").html(),
+                        success:function(){
+                            form.render();
+                    }
+                    })
+            });
+            form.verify({
+              zero: [
+                /^[0.]+$/
+                ,'当前仍有库存，请出库后删除！'
+              ],
+              bigger:[
+                  /^[1-9]+[0-9]*$/
+                ,'出入库数量必须大于0！'
+              ],
+              more:function (value){ //value：表单的值、item：表单的DOM对象
+                  if(Number(value)>Number($("#onumber").val())){
+                      return '出库数量不能大于目前库存！';
+                  }
+              }
+            });
+            form.on('submit(save)', function(data){
+                layer.closeAll();
+                $.get("/op/save", $("#saveit").serialize() );
+                $("#searchbt").click();
+                return false;
+            });
+            form.on('submit(addgoods)', function(data){
+                layer.closeAll();
+                $.get("/op/add", $("#addgoodsit").serialize());
+                $("#searchbt").click();
+                return false;
+            });
+            form.on('submit(delgoods)', function(data){
+                layer.closeAll();
+                $.get("/op/del", $("#delgoodsit").serialize());
+                $("#searchbt").click();
+                return false;
+            });
+            form.on('submit(inlog)', function(data){
+                layer.closeAll();
+                $.get("/op/in", $("#inlogit").serialize() );
+                $("#searchbt").click();
+                return false;
+            });
+            form.on('submit(outlog)', function(data){
+                layer.closeAll();
+                $.get("/op/out",  $("#outlogit").serialize());
+                $("#searchbt").click();
+                return false;
+            });
+		});
+		
+	</script>
+</body>
+</html>
